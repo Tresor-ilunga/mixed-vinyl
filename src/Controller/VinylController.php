@@ -39,9 +39,40 @@ final class VinylController extends AbstractController
     #[Route('/browse/{slug}', name: 'vinyl_browse', methods: ['GET'])]
     public function browse(string $slug = null): Response
     {
+        $mixes = $this->getMixes();
         $genre = $slug ? u(str_replace('-', ' ', $slug))->title(true) : null;
+
+
         return $this->render('pages/vinyl/browse.html.twig', [
-            'genre' => $genre
+            'genre' => $genre,
+            'mixes' => $mixes
         ]);
+    }
+
+    private function getMixes(): array
+    {
+        // temporary fake "mixes" data
+
+        return [
+            [
+                'title' => 'PB & Jams',
+                'trackCount' => 14,
+                'genre' => 'Rock',
+                'createdAt' => new \DateTime('2023-07-22'),
+            ],
+            [
+                'title' => 'Put a Hex on your Ex',
+                'trackCount' => 8,
+                'genre' => 'Heavy Metal',
+                'createdAt' => new \DateTime('2023-07-22'),
+            ],
+            [
+                'title' => 'Spice Grills - Summer Tunes',
+                'trackCount' => 10,
+                'genre' => 'Pop',
+                'createdAt' => new \DateTime('2023-07-22'),
+            ],
+
+        ];
     }
 }
