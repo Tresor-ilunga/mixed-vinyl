@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Twig\Environment;
 use function Symfony\Component\String\u;
+use Psr\Cache\CacheItemInterface;
 
 /**
  * Class VinylController
@@ -36,43 +42,26 @@ final class VinylController extends AbstractController
         ]);
     }
 
+    /**
+     * This is the controller that renders the "Browse" page.
+     *
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface|InvalidArgumentException
+     */
     #[Route('/browse/{slug}', name: 'vinyl_browse', methods: ['GET'])]
-    public function browse(string $slug = null): Response
+    public function browse(HttpClientInterface $httpClient,  CacheInterface $cache,string $slug = null): Response
     {
-        $mixes = $this->getMixes();
         $genre = $slug ? u(str_replace('-', ' ', $slug))->title(true) : null;
-
+        $mixes = $cache->get('mixes_data', function(CacheItemInterface $cacheItem) use ($httpClient) {
+            $cacheItem->expiresAfter(5);
+            $response = $httpClient->request('GET', 'https://raw.githubusercontent.com/SymfonyCasts/vinyl-mixes/main/mixes.json');
+            return $response->toArray();
+        });
 
         return $this->render('pages/vinyl/browse.html.twig', [
             'genre' => $genre,
             'mixes' => $mixes
         ]);
-    }
-
-    private function getMixes(): array
-    {
-        // temporary fake "mixes" data
-
-        return [
-            [
-                'title' => 'PB & Jams',
-                'trackCount' => 14,
-                'genre' => 'Rock',
-                'createdAt' => new \DateTime('2023-07-22'),
-            ],
-            [
-                'title' => 'Put a Hex on your Ex',
-                'trackCount' => 8,
-                'genre' => 'Heavy Metal',
-                'createdAt' => new \DateTime('2023-07-22'),
-            ],
-            [
-                'title' => 'Spice Grills - Summer Tunes',
-                'trackCount' => 10,
-                'genre' => 'Pop',
-                'createdAt' => new \DateTime('2023-07-22'),
-            ],
-
-        ];
     }
 }
