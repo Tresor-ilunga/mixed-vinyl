@@ -17,6 +17,13 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 final class SongApiController extends AbstractController
 {
+    /**
+     * This is a fake API endpoint - it's just pretending to query a database
+     *
+     * @param int $id
+     * @param LoggerInterface $logger
+     * @return Response
+     */
     #[Route('/api/songs/{id<\d+>}', name: 'api_song_get', methods: ['GET'])]
     public function getSong(int $id, LoggerInterface $logger): Response
     {

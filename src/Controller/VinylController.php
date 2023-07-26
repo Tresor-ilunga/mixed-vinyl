@@ -23,6 +23,11 @@ use Psr\Cache\CacheItemInterface;
  */
 final class VinylController extends AbstractController
 {
+    /**
+     * This is the controller that renders the "Home" page.
+     *
+     * @return Response
+     */
     #[Route('/', name: 'vinyl_homepage', methods: ['GET'])]
     public function homepage(): Response
     {
